@@ -3,7 +3,7 @@ import { expect, test } from 'bun:test';
 test('package identity and Stryker compatibility match the published fork', async () => {
   const packageJson = await Bun.file(new URL('../../package.json', import.meta.url)).json();
 
-  expect(packageJson.name).toBe('stryker-mutator-bun-runner');
+  expect(packageJson.name).toBe('@fidasek009/stryker-mutator-bun-runner');
   expect(packageJson.author).toBe('fidasek009');
   expect(packageJson.repository.url).toBe(
     'git+https://github.com/Fidasek009/stryker-mutator-bun-runner.git'

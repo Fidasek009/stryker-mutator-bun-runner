@@ -1,6 +1,6 @@
-# stryker-mutator-bun-runner
+# @fidasek009/stryker-mutator-bun-runner
 
-[![npm version](https://badge.fury.io/js/stryker-mutator-bun-runner.svg)](https://badge.fury.io/js/stryker-mutator-bun-runner)
+[![npm version](https://img.shields.io/npm/v/@fidasek009/stryker-mutator-bun-runner.svg)](https://www.npmjs.com/package/@fidasek009/stryker-mutator-bun-runner)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 A test runner plugin to use [Bun](https://bun.sh) with [StrykerJS](https://stryker-mutator.io), the JavaScript mutation testing framework.
@@ -40,7 +40,7 @@ A test runner plugin to use [Bun](https://bun.sh) with [StrykerJS](https://stryk
 ## Installation
 
 ```bash
-npm install --save-dev @stryker-mutator/core stryker-mutator-bun-runner
+npm install --save-dev @stryker-mutator/core @fidasek009/stryker-mutator-bun-runner
 ```
 
 ## Quick Start
@@ -60,7 +60,7 @@ Choose "bun" as your test runner when prompted.
   "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
   "packageManager": "npm",
   "testRunner": "bun",
-  "plugins": ["stryker-mutator-bun-runner"],
+  "plugins": ["@fidasek009/stryker-mutator-bun-runner"],
   "mutate": ["src/**/*.ts", "!src/**/*.test.ts"],
   "coverageAnalysis": "perTest",
   "reporters": ["html", "clear-text", "progress"],
@@ -104,7 +104,7 @@ Open `reports/mutation/mutation.html` in your browser to see detailed results.
 ```json
 {
   "testRunner": "bun",
-  "plugins": ["stryker-mutator-bun-runner"],
+  "plugins": ["@fidasek009/stryker-mutator-bun-runner"],
   "mutate": ["src/**/*.ts", "!src/**/*.test.ts"],
   "coverageAnalysis": "perTest",
   "bun": {
