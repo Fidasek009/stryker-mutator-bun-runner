@@ -1,9 +1,7 @@
 # stryker-mutator-bun-runner
 
 [![npm version](https://badge.fury.io/js/stryker-mutator-bun-runner.svg)](https://badge.fury.io/js/stryker-mutator-bun-runner)
-[![CI](https://github.com/stryker-mutator/stryker-bun/workflows/CI/badge.svg)](https://github.com/stryker-mutator/stryker-bun/actions)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Mutation testing badge](https://img.shields.io/endpoint?style=flat&url=https%3A%2F%2Fbadge-api.stryker-mutator.io%2Fgithub.com%2Fstryker-mutator%2Fstryker-bun%2Fmain)](https://dashboard.stryker-mutator.io/reports/github.com/stryker-mutator/stryker-bun/main)
 
 A test runner plugin to use [Bun](https://bun.sh) with [StrykerJS](https://stryker-mutator.io), the JavaScript mutation testing framework.
 
@@ -258,8 +256,8 @@ We welcome contributions! Please see our [Contributing Guide](./CONTRIBUTING.md)
 
 ```bash
 # Clone the repo
-git clone https://github.com/stryker-mutator/stryker-bun.git
-cd stryker-bun
+git clone https://github.com/Fidasek009/stryker-mutator-bun-runner.git
+cd stryker-mutator-bun-runner
 
 # Install dependencies
 npm install
@@ -276,8 +274,8 @@ npm run build
 
 ## Support
 
-- 🐛 **[Report bugs](https://github.com/stryker-mutator/stryker-bun/issues)**
-- 💡 **[Request features](https://github.com/stryker-mutator/stryker-bun/issues)**
+- 🐛 **[Report bugs](https://github.com/Fidasek009/stryker-mutator-bun-runner/issues)**
+- 💡 **[Request features](https://github.com/Fidasek009/stryker-mutator-bun-runner/issues)**
 - 💬 **[Join Stryker Slack](https://join.slack.com/t/stryker-mutator/shared_invite/enQtOTUyMTYyNTg1NDQ0LTU4ODNmZDlmN2I3MmEyMTVhYjZlYmJkOThlNTY3NTM1M2QxYmM5YTM3ODQxYmJjY2YyYzllM2RkMmM1NjNjZjM)**
 
 ## Changelog

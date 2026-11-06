@@ -620,7 +620,7 @@ npm install --save-dev @stryker-mutator/core @stryker-mutator/bun-runner
 
 ```bash
 # Clone repository
-git clone https://github.com/menoncello/stryker-mutator-bun-runner.git
+git clone https://github.com/Fidasek009/stryker-mutator-bun-runner.git
 cd stryker-mutator-bun-runner
 
 # Install dependencies with Bun

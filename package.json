@@ -65,16 +65,16 @@
     "bun",
     "mutation-testing"
   ],
-  "author": "Eduardo Menoncello <eduardo.menoncello@gmail.com>",
+  "author": "fidasek009",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/menoncello/stryker-mutator-bun-runner.git"
+    "url": "git+https://github.com/Fidasek009/stryker-mutator-bun-runner.git"
   },
   "bugs": {
-    "url": "https://github.com/menoncello/stryker-mutator-bun-runner/issues"
+    "url": "https://github.com/Fidasek009/stryker-mutator-bun-runner/issues"
   },
-  "homepage": "https://github.com/menoncello/stryker-mutator-bun-runner#readme",
+  "homepage": "https://github.com/Fidasek009/stryker-mutator-bun-runner#readme",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
