@@ -1,0 +1,5 @@
+{
+  "name": "module-load-fixture",
+  "private": true,
+  "type": "module"
+}

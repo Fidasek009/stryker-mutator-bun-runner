@@ -1,0 +1,18 @@
+{
+  "$schema": "../../../node_modules/@stryker-mutator/core/schema/stryker-schema.json",
+  "testRunner": "bun",
+  "plugins": ["../../../dist/index.js"],
+  "mutate": ["src/math.ts"],
+  "coverageAnalysis": "off",
+  "reporters": ["clear-text", "json"],
+  "jsonReporter": { "fileName": "reports/mutation-off.json" },
+  "cleanTempDir": true,
+  "logLevel": "info",
+  "concurrency": 2,
+  "bun": {
+    "testFiles": ["test/math.test.ts"],
+    "timeout": 1000,
+    "bunArgs": ["--randomize", "--seed=42"]
+  },
+  "thresholds": { "high": 0, "low": 0, "break": null }
+}
