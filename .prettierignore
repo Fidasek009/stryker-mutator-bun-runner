@@ -43,6 +43,3 @@ test/fixtures/
 # Configuration files that shouldn't be formatted
 package-lock.json
 yarn.lock
-
-# Published README is kept byte-for-byte identical to the npm tarball
-README.md
