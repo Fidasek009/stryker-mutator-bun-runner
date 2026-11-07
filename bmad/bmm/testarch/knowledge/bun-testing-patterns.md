@@ -36,7 +36,7 @@ bun test --coverage --coverage-reporter=lcov
 - **Test Pass Rate**: 100% required
 - **Coverage Threshold**: ≥80% (NFR009)
 - **No 'any' Types**: Use proper TypeScript types in test data
-- **ESLint Compliance**: Test code must pass linting
+- **Oxlint Compliance**: Test code must pass linting
 - **Structure Tests**: BDD organization with descriptive names
 
 ## Test Data Patterns

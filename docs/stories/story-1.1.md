@@ -97,11 +97,10 @@ stryker-mutator-bun-runner/
 
 **Development Dependencies:**
 
-- `typescript`: ^5.3.0
-- `@types/node`: ^18.0.0
-- `eslint`: ^8.x with @typescript-eslint
-- `prettier`: ^3.x
-- `bun`: ^1.3.0 (development runtime)
+- `typescript`: 7.0.2
+- `@types/node`: ^26.6.6
+- `oxlint`: ^1.92.0
+- `bun`: >=1.4.4 (development runtime and formatter)
 
 ### Build Requirements
 
@@ -113,9 +112,8 @@ stryker-mutator-bun-runner/
 
 ### Code Quality Standards
 
-- **ESLint**: Follow Stryker ecosystem conventions (NFR019) [Source:
-  docs/architecture.md#Naming Conventions]
-- **Prettier**: Consistent formatting with defined rules
+- **Oxlint**: TypeScript correctness checks with warnings denied
+- **Bun fmt**: Formatting configured in bunfig.toml
 - **No 'any' Types**: Strict type safety policy (NFR018) [Source:
   docs/architecture.md#CRITICAL RULES]
 - **Module Structure**: barrel exports for clean imports

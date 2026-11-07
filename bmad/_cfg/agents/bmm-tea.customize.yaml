@@ -27,8 +27,8 @@ critical_actions:
       - Infer types correctly from implementation code
 
       **Code Quality:**
-      - ESLint: Pass with 0 errors (NEVER use eslint-disable comments)
-      - Formatting: Follow project Prettier conventions
+      - Oxlint: Pass with 0 errors (NEVER use oxlint-disable comments)
+      - Formatting: Follow project Bun formatter conventions
 
       **Test Framework:**
       - Test Runner: Use Bun Test API (describe, it, expect)
@@ -38,7 +38,7 @@ critical_actions:
       **Test Data and Assertions:**
       - Use proper TypeScript types (no 'any')
       - Handle async/await correctly (no floating promises)
-      - Follow ESLint rules (no-unused-vars, etc.)
+      - Follow Oxlint rules
       - Structure tests to kill mutants (boundary values, null checks, error paths)
 
       **Architecture Compliance:**
@@ -52,7 +52,7 @@ memories:
   - 'Mutation testing: Stryker (dogfooding NFR010)'
   - 'Test coverage target: ≥80% (NFR009)'
   - "NEVER use 'any' type in test code (ADR-004, NFR018)"
-  - 'Test code must pass TypeScript strict mode, ESLint, and Prettier'
+  - 'Test code must pass TypeScript strict mode, Oxlint, and Bun formatter checks'
 
 # Add custom menu items (appended to base menu)
 # Don't include * prefix or help/exit - auto-injected

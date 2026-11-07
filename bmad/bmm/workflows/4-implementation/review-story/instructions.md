@@ -96,7 +96,7 @@
     <critical>Verify quality gates were enforced during development</critical>
 
     <substep n="5.5.1" goal="TypeScript compilation verification">
-      <action>Run: bun run typecheck (or tsc --noEmit)</action>
+      <action>Run: bun run typecheck</action>
       <check>ZERO TypeScript errors - flag as High Severity if found</check>
       <action>Scan changed files for 'any' type usage</action>
       <check>If 'any' types found → flag as High Severity violation (ADR-004)</check>
@@ -104,11 +104,11 @@
       <check>If found → flag as High Severity violation</check>
     </substep>
 
-    <substep n="5.5.2" goal="ESLint compliance verification">
+    <substep n="5.5.2" goal="Oxlint compliance verification">
       <action>Run: bun run lint</action>
-      <check>ZERO ESLint errors - flag as High Severity if found</check>
-      <action>Scan changed files for eslint-disable comments</action>
-      <check>If eslint-disable found → flag as High Severity violation</check>
+      <check>ZERO Oxlint errors - flag as High Severity if found</check>
+      <action>Scan changed files for oxlint-disable comments</action>
+      <check>If oxlint-disable found → flag as High Severity violation</check>
     </substep>
 
     <substep n="5.5.3" goal="Test execution and coverage verification">

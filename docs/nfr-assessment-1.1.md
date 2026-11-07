@@ -314,7 +314,7 @@ nfr_assessment:
 - **Evidence Sources:**
   - Test Results: test/output directory (currently failing)
   - Build Output: dist/ directory (successfully generated)
-  - Configuration: tsconfig.json, package.json, eslint.config.js
+  - Configuration: tsconfig.json, package.json, .oxlintrc.json, bunfig.toml
 
 ---
 
@@ -323,7 +323,7 @@ nfr_assessment:
 **Release Blocker:** None - No critical blockers preventing release, but HIGH
 priority issues must be addressed
 
-**High Priority:** Fix ESLint violations (CRITICAL), update dependencies (HIGH)
+**High Priority:** Fix Oxlint violations (CRITICAL), update dependencies (HIGH)
 
 **Medium Priority:** Improve function coverage, refactor complex functions
 

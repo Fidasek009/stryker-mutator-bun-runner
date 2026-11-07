@@ -27,8 +27,8 @@ critical_actions:
       - Use proper type annotations and generics
 
       **Code Quality:**
-      - Examples MUST pass ESLint validation (0 errors)
-      - Examples MUST follow project formatting conventions (Prettier)
+      - Examples MUST pass Oxlint validation (0 errors)
+      - Examples MUST follow project formatting conventions (Bun formatter)
 
       **Purpose:**
       Code examples are NOT pseudocode - they are executable demonstrations that guide developers.
@@ -40,7 +40,7 @@ critical_actions:
 memories:
   - 'Code examples in ADRs must compile with TypeScript strict mode (0 errors)'
   - "NEVER use 'any' type in code examples (ADR-004)"
-  - 'Code examples must pass ESLint and follow Prettier formatting'
+  - 'Code examples must pass Oxlint and follow Bun formatter formatting'
   - 'Examples guide developers - they must be production-ready'
 
 # Add custom menu items (appended to base menu)

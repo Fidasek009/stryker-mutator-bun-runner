@@ -106,21 +106,21 @@ Story is already marked in-progress
     <critical>Quality validation is MANDATORY - ALL substeps must pass with ZERO errors</critical>
 
     <substep n="4.1" goal="TypeScript type checking">
-      <action>Run: bun run typecheck (or tsc --noEmit)</action>
+      <action>Run: bun run typecheck</action>
       <check>ZERO TypeScript errors required - no exceptions</check>
       <critical>NEVER use @ts-ignore or @ts-expect-error - fix the actual type issue</critical>
       <critical>NEVER use 'any' type - violates ADR-004 and NFR018</critical>
     </substep>
 
-    <substep n="4.2" goal="ESLint validation">
+    <substep n="4.2" goal="Oxlint validation">
       <action>Run: bun run lint</action>
-      <check>ZERO ESLint errors required</check>
-      <critical>NEVER add eslint-disable comments - refactor code to satisfy the rule</critical>
+      <check>ZERO Oxlint errors required</check>
+      <critical>NEVER add oxlint-disable comments - refactor code to satisfy the rule</critical>
     </substep>
 
     <substep n="4.3" goal="Code formatting check">
       <action>Run: bun run format:check</action>
-      <check>100% Prettier compliance required</check>
+      <check>100% Bun formatter compliance required</check>
     </substep>
 
     <substep n="4.4" goal="Test execution">

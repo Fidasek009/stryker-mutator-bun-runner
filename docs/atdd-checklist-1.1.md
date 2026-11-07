@@ -197,18 +197,18 @@ None required for this project setup story (no UI components to test).
 
 ---
 
-### Test: ESLint and Prettier Configuration
+### Test: Oxlint and Bun Formatter Configuration
 
 **File:** `tests/unit/project-setup.spec.ts`
 
 **Tasks to make this test pass:**
 
-- [ ] Create .eslintrc.json configuration
-- [ ] Configure TypeScript ESLint rules
-- [ ] Create .prettierrc configuration
+- [ ] Create .oxlintrc.json configuration
+- [ ] Configure Oxlint TypeScript rules
+- [ ] Configure Bun's formatter in bunfig.toml
 - [ ] Add lint script to package.json
 - [ ] Add format script to package.json
-- [ ] Run lint: `npm run lint`
+- [ ] Run lint: `bun run lint`
 - [ ] Fix any linting errors
 - [ ] ✅ Test passes (green phase)
 

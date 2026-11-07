@@ -1,6 +1,6 @@
 {
   "name": "@fidasek009/stryker-mutator-bun-runner",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Bun test runner plugin for StrykerJS",
   "type": "module",
   "main": "./dist/index.js",
@@ -21,15 +21,15 @@
   "packageManager": "bun@1.4.4",
   "scripts": {
     "build": "bun ./node_modules/typescript/bin/tsc -p tsconfig.build.json",
-    "typecheck": "bun ./node_modules/typescript/bin/tsc --noEmit",
+    "typecheck": "bun check --no-script",
     "test": "bun test tests/unit && bun run test:integration",
     "test:unit": "bun test tests/unit",
     "test:integration": "bun run build && bun test tests/integration",
     "test:mutation:fixture": "bun ./scripts/run-mutation-fixture.ts",
     "test:mutate": "bun ./node_modules/@stryker-mutator/core/bin/stryker.js run",
-    "lint": "bun ./node_modules/eslint/bin/eslint.js src tests scripts --max-warnings=0",
-    "format": "bun ./node_modules/prettier/bin/prettier.cjs --write src tests scripts README.md package.json tsconfig.json tsconfig.build.json eslint.config.js stryker.config.json",
-    "format:check": "bun ./node_modules/prettier/bin/prettier.cjs --check src tests scripts README.md package.json tsconfig.json tsconfig.build.json eslint.config.js stryker.config.json",
+    "lint": "oxlint src tests scripts --deny-warnings",
+    "format": "bun fmt src tests scripts README.md package.json .oxlintrc.json tsconfig.json tsconfig.build.json stryker.config.json",
+    "format:check": "bun fmt --check src tests scripts README.md package.json .oxlintrc.json tsconfig.json tsconfig.build.json stryker.config.json",
     "check": "bun run typecheck && bun run lint && bun run format:check && bun run test",
     "clean": "bun -e 'import { rm } from \"node:fs/promises\"; await rm(\"dist\", { recursive: true, force: true });'",
     "prepublishOnly": "bun run check && bun run build"
@@ -47,15 +47,8 @@
     "@stryker-mutator/core": "10.1.1",
     "@types/bun": "1.4.4",
     "@types/node": "^26.6.6",
-    "@typescript-eslint/eslint-plugin": "^8.46.2",
-    "@typescript-eslint/parser": "^8.46.2",
-    "eslint": "^8.57.0",
-    "eslint-plugin-import": "^2.29.0",
-    "eslint-plugin-jsdoc": "^65.4.3",
-    "eslint-plugin-sonarjs": "^4.2.2",
-    "eslint-plugin-unicorn": "^51.0.0",
-    "prettier": "^3.2.0",
-    "typescript": "5.9.3"
+    "oxlint": "^1.92.0",
+    "typescript": "7.0.2"
   },
   "keywords": [
     "stryker",

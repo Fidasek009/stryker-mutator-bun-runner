@@ -72,7 +72,7 @@
 /bmad:bmm:agents:dev *develop X.X
 # Quality gates run automatically:
 # - TypeScript: 0 errors (strict mode, NO 'any' types - ADR-004)
-# - ESLint: 0 errors (no eslint-disable allowed)
+# - Oxlint: 0 errors (no oxlint-disable allowed)
 # - Tests: 100% pass rate, ≥80% coverage (NFR009)
 # - Mutation: Stryker dogfooding (NFR010)
 # - Architecture: FR037, FR027/FR028/FR038 compliance
@@ -92,7 +92,7 @@
 /bmad:bmm:agents:dev *review X.X
 # Review scans for:
 # - any 'any' types (ADR-004 violation)
-# - eslint-disable / @ts-ignore comments
+# - oxlint-disable / @ts-ignore comments
 # - Quality gates compliance
 
 # If have some issue, back to 3 (Implementation)
@@ -144,15 +144,15 @@ node /Users/menoncello/repos/oss/bmad6/tools/cli/bmad-cli.js install
 **Quality Gates (Zero-Tolerance):**
 
 - TypeScript: 0 errors (strict mode, NO 'any' types - ADR-004)
-- ESLint: 0 errors (no eslint-disable allowed)
+- Oxlint: 0 errors (no oxlint-disable allowed)
 - Tests: 100% pass rate, ≥80% coverage
 - Mutation: Stryker dogfooding (never lower thresholds)
-- Formatting: 100% Prettier compliance
+- Formatting: 100% Bun formatter compliance
 
 **Forbidden Practices:**
 
 - NEVER use `any` type (ADR-004, NFR018)
-- NEVER add `eslint-disable` comments
+- NEVER add `oxlint-disable` comments
 - NEVER use `@ts-ignore` or `@ts-expect-error`
 - NEVER lower mutation testing thresholds
 

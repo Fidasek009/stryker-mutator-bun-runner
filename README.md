@@ -95,7 +95,7 @@ bun run test:mutation:fixture
 bun run test:mutate
 ```
 
-`bun run check` runs strict TypeScript, zero-warning ESLint, Prettier, unit tests, and integration tests. Integration fixtures exercise real Stryker runs for module-load errors, kills and survivors, static and runtime activation, parameterized tests, path and name filters, lifecycle hooks, random order, bail, timeout, and cleanup.
+`bun run check` runs Bun's TypeScript checker, Oxlint with warnings denied, Bun's formatter, unit tests, and integration tests. Integration fixtures exercise real Stryker runs for module-load errors, kills and survivors, static and runtime activation, parameterized tests, path and name filters, lifecycle hooks, random order, bail, timeout, and cleanup.
 
 `test:mutation:fixture` prints coverage-off and per-test wall times for a small deterministic fixture. It is not a guarantee of times for other projects. `test:mutate` mutates the result parser through the plugin; it is not a claim about coverage for the rest of the source files.
 

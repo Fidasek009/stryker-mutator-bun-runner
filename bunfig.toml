@@ -1,0 +1,6 @@
+[fmt]
+printWidth = 100
+trailingComma = "es5"
+singleQuote = true
+arrowParens = "avoid"
+ignorePatterns = ["**/fixtures/**", "**/*.d.ts", "**/*.d.ts.map", "*.lock"]
