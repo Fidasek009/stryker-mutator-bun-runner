@@ -11,9 +11,12 @@ const stryker = (globalThis as typeof globalThis & { __stryker__?: StrykerState 
 function cover(mutantId: string): void {
   const coverage = stryker?.mutantCoverage;
   if (!coverage) throw new Error('Expected mutant coverage to be initialized');
-  const hits = stryker.currentTestId
-    ? (coverage.perTest[stryker.currentTestId] ??= {})
-    : coverage.static;
+  const currentTestId = stryker.currentTestId;
+  let hits = coverage.static;
+  if (currentTestId) {
+    hits = coverage.perTest[currentTestId] ?? {};
+    coverage.perTest[currentTestId] = hits;
+  }
   hits[mutantId] = (hits[mutantId] ?? 0) + 1;
 }
 
