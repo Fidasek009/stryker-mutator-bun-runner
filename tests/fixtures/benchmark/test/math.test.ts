@@ -1,0 +1,19 @@
+import { describe, expect, test } from 'bun:test';
+import { add, multiply } from '../src/math';
+
+describe('arithmetic', () => {
+  test('adds zero without evidence for nonzero operands', async () => {
+    await Bun.sleep(25);
+    expect(add(0, 0)).toBe(0);
+  });
+
+  test('multiplies two numbers', async () => {
+    await Bun.sleep(25);
+    expect(multiply(2, 3)).toBe(6);
+  });
+});
+
+test.each([1, 2, 3, 4, 5, 6, 7, 8])('independent case %i', async value => {
+  await Bun.sleep(100);
+  expect(value).toBeGreaterThan(0);
+});
