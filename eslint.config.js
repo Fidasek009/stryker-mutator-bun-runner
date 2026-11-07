@@ -196,4 +196,13 @@ export default [
       'unicorn/no-array-for-each': 'off',
     },
   },
+  {
+    files: ['**/tests/fixtures/**/*.ts'],
+    rules: {
+      'sonarjs/assertions-in-tests': 'off',
+      'sonarjs/no-duplicate-test-title': 'off',
+      'sonarjs/no-skipped-tests': 'off',
+      'sonarjs/no-trivial-assertions': 'off',
+    },
+  },
 ];
