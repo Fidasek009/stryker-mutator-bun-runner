@@ -46,7 +46,7 @@
     "@playwright/test": "^1.56.1",
     "@stryker-mutator/core": "10.1.1",
     "@types/bun": "1.4.4",
-    "@types/node": "^22.0.0",
+    "@types/node": "^26.6.6",
     "@typescript-eslint/eslint-plugin": "^8.46.2",
     "@typescript-eslint/parser": "^8.46.2",
     "eslint": "^8.57.0",
