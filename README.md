@@ -5,6 +5,8 @@
 
 A test runner plugin to use [Bun](https://bun.sh) with [StrykerJS](https://stryker-mutator.io), the JavaScript mutation testing framework.
 
+Run Stryker itself with Bun 1.4.4 or newer, not Node.js. The runner uses Bun for both the plugin process and each spawned test process.
+
 > ⚡ **Lightning-fast mutation testing** - Leverage Bun's speed for rapid mutation testing
 > 
 > 🔥 **Zero Config TypeScript** - Works with TypeScript and JSX out of the box
@@ -40,7 +42,7 @@ A test runner plugin to use [Bun](https://bun.sh) with [StrykerJS](https://stryk
 ## Installation
 
 ```bash
-npm install --save-dev @stryker-mutator/core @fidasek009/stryker-mutator-bun-runner
+bun add --dev @stryker-mutator/core@10.1.1 @fidasek009/stryker-mutator-bun-runner
 ```
 
 ## Quick Start
@@ -48,7 +50,7 @@ npm install --save-dev @stryker-mutator/core @fidasek009/stryker-mutator-bun-run
 ### 1. Initialize StrykerJS (if new project)
 
 ```bash
-npx stryker init
+bun x --bun stryker init
 ```
 
 Choose "bun" as your test runner when prompted.
@@ -58,7 +60,6 @@ Choose "bun" as your test runner when prompted.
 ```json
 {
   "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
-  "packageManager": "npm",
   "testRunner": "bun",
   "plugins": ["@fidasek009/stryker-mutator-bun-runner"],
   "mutate": ["src/**/*.ts", "!src/**/*.test.ts"],
@@ -74,7 +75,7 @@ Choose "bun" as your test runner when prompted.
 ### 3. Run mutation testing
 
 ```bash
-npx stryker run
+bun ./node_modules/@stryker-mutator/core/bin/stryker.js run
 ```
 
 ### 4. View results
@@ -172,9 +173,8 @@ Open `reports/mutation/mutation.html` in your browser to see detailed results.
 
 ## Requirements
 
-- Bun >= 1.0.0
-- StrykerJS >= 9.0.0
-- Node.js >= 20.0.0 (for StrykerJS)
+- Bun >= 1.4.4 for Stryker and test execution
+- StrykerJS 10.1.1
 
 ## Documentation
 
@@ -260,16 +260,16 @@ git clone https://github.com/Fidasek009/stryker-mutator-bun-runner.git
 cd stryker-mutator-bun-runner
 
 # Install dependencies
-npm install
+bun install
 
 # Run tests
-npm test
+bun run test
 
 # Run linting
-npm run lint
+bun run lint
 
 # Build the project
-npm run build
+bun run build
 ```
 
 ## Support
