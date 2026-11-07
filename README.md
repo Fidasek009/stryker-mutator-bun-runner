@@ -5,7 +5,7 @@
 
 A test runner plugin to use [Bun](https://bun.sh) with [StrykerJS](https://stryker-mutator.io), the JavaScript mutation testing framework.
 
-Run Stryker itself with Bun 1.4.4 or newer, not Node.js. The runner uses Bun for both the plugin process and each spawned test process.
+Run Stryker itself with Bun, not Node.js. The runner uses Bun for both the plugin process and each spawned test process.
 
 > ⚡ **Lightning-fast mutation testing** - Leverage Bun's speed for rapid mutation testing
 > 
@@ -42,7 +42,7 @@ Run Stryker itself with Bun 1.4.4 or newer, not Node.js. The runner uses Bun for
 ## Installation
 
 ```bash
-bun add --dev @stryker-mutator/core@10.1.1 @fidasek009/stryker-mutator-bun-runner
+bun add --dev @stryker-mutator/core @fidasek009/stryker-mutator-bun-runner
 ```
 
 ## Quick Start
@@ -173,8 +173,7 @@ Open `reports/mutation/mutation.html` in your browser to see detailed results.
 
 ## Requirements
 
-- Bun >= 1.4.4 for Stryker and test execution
-- StrykerJS 10.1.1
+The supported Bun and Stryker core versions are declared in `package.json` under `engines` and `peerDependencies`. Bun must run both Stryker and the test processes.
 
 ## Documentation
 
