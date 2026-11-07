@@ -29,7 +29,7 @@ describe('BunResultParser', () => {
       status: TestStatus.Success,
       timeSpentMs: 13,
       fileName: 'math.test.ts',
-      startPosition: { line: 7, column: 0 },
+      startPosition: { line: 6, column: 0 },
     });
     expect(result.tests).toContainEqual({
       id: 'outer & inner nested fails',

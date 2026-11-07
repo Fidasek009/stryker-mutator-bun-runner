@@ -1,67 +1,22 @@
 # @fidasek009/stryker-mutator-bun-runner
 
-[![npm version](https://img.shields.io/npm/v/@fidasek009/stryker-mutator-bun-runner.svg)](https://www.npmjs.com/package/@fidasek009/stryker-mutator-bun-runner)
-[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+A Stryker test-runner plugin for `bun:test`. Stryker itself must run under Bun,
+not Node.js. The runner uses the same runtime for the Stryker worker and each
+subprocess that executes tests.
 
-A test runner plugin to use [Bun](https://bun.sh) with
-[StrykerJS](https://stryker-mutator.io), the JavaScript mutation testing
-framework.
+## Install
 
-Run Stryker itself with Bun, not Node.js. The runner uses Bun for both the
-plugin process and each spawned test process.
-
-> ⚡ **Lightning-fast mutation testing** - Leverage Bun's speed for rapid
-> mutation testing
->
-> 🔥 **Zero Config TypeScript** - Works with TypeScript and JSX out of the box
->
-> 📊 **Smart Coverage Analysis** - Only run tests that can detect mutations
->
-> 🎯 **100% Tested** - Comprehensive test suite with 100% mutation score
-
-## Features
-
-### ✅ Implemented
-
-- **Fast Test Execution** - Leverage Bun's speed for quick test runs
-- **TypeScript & JSX Support** - No configuration needed
-- **Coverage Analysis** - Smart test filtering with perTest coverage
-- **Process Pool** - Reuse Bun processes for 2-3x faster execution
-- **Watch Mode** - Real-time mutation testing during development
-- **Snapshot Testing** - Full support for Bun's snapshot features
-- **Source Maps** - Accurate error reporting with source map support
-- **Flexible Configuration** - Extensive options for customization
-- **Timeout Handling** - Configurable timeouts with graceful handling
-- **Test Filtering** - Run only tests that can kill specific mutants
-- **Environment Variables** - Full control over test environment
-- **Custom Commands** - Support for custom test scripts
-- **TypeScript Strict Mode** - Full support for strict TypeScript projects
-- **100% Test Coverage** - Thoroughly tested with 251 tests
-- **ESLint Clean** - Zero errors, zero warnings
-
-### 🚀 Performance
-
-- **2-3x Faster** with process pool enabled
-- **90% Less Test Runs** with perTest coverage analysis
-- **Optimized for CI/CD** with configurable worker counts
-
-## Installation
-
-```bash
+```sh
 bun add --dev @stryker-mutator/core @fidasek009/stryker-mutator-bun-runner
 ```
 
-## Quick Start
+Supported Bun and Stryker core versions are declared in `package.json` under
+`engines` and `peerDependencies`.
 
-### 1. Initialize StrykerJS (if new project)
+## Configure
 
-```bash
-bun x --bun stryker init
-```
-
-Choose "bun" as your test runner when prompted.
-
-### 2. Or manually create `stryker.config.json`
+Set `testRunner` to `bun` and load this package in `strykerPlugins`. `$schema`
+is optional.
 
 ```json
 {
@@ -70,255 +25,118 @@ Choose "bun" as your test runner when prompted.
   "plugins": ["@fidasek009/stryker-mutator-bun-runner"],
   "mutate": ["src/**/*.ts", "!src/**/*.test.ts"],
   "coverageAnalysis": "perTest",
-  "reporters": ["html", "clear-text", "progress"],
+  "concurrency": 2,
+  "reporters": ["clear-text", "html"],
   "bun": {
-    "testFiles": ["**/*.test.ts"],
-    "timeout": 30000
+    "testFiles": ["test/**/*.test.ts"],
+    "timeout": 5000
   }
 }
 ```
 
-### 3. Run mutation testing
+Leave Stryker's `packageManager` unset when dependencies already exist. Its
+schema supports `npm`, `yarn`, and `pnpm`, not Bun.
 
-```bash
+## Run
+
+```sh
 bun ./node_modules/@stryker-mutator/core/bin/stryker.js run
 ```
 
-### 4. View results
+Do not launch Stryker with `npx` or Node. The plugin uses `Bun.spawn`, so those
+launch methods are unsupported.
 
-Open `reports/mutation/mutation.html` in your browser to see detailed results.
+## Options
 
-## Configuration
+Options belong under the `bun` key.
 
-### Basic Options
+| Option            | Type                     | Default       | Description                                                                                                             |
+| ----------------- | ------------------------ | ------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `testFiles`       | `string[]`               | Bun discovery | Paths or glob patterns. Globs must match at least one project file. Dependency tests under `node_modules` are excluded. |
+| `timeout`         | `number`                 | `5000`        | Per-test timeout passed to `bun test`, in milliseconds.                                                                 |
+| `bail`            | `boolean`                | `false`       | Stop the dry run after its first failure. Mutant runs bail unless Stryker sets `disableBail`.                           |
+| `bunArgs`         | `string[]`               | `[]`          | Extra `bun test` flags, such as `["--randomize", "--seed=42"]`.                                                         |
+| `env`             | `Record<string, string>` | `{}`          | Environment overrides for every Bun process.                                                                            |
+| `updateSnapshots` | `boolean`                | `false`       | Pass `--update-snapshots` during dry runs only. Mutant runs never update snapshots.                                     |
 
-| Option            | Type       | Default                                                      | Description                              |
-| ----------------- | ---------- | ------------------------------------------------------------ | ---------------------------------------- |
-| `testFiles`       | `string[]` | `["**/*.test.{js,ts,jsx,tsx}", "**/*.spec.{js,ts,jsx,tsx}"]` | Test file patterns                       |
-| `timeout`         | `number`   | `10000`                                                      | Timeout per test in milliseconds         |
-| `bail`            | `boolean`  | `false`                                                      | Stop on first test failure               |
-| `nodeArgs`        | `string[]` | `[]`                                                         | Additional Bun process arguments         |
-| `env`             | `object`   | `{}`                                                         | Environment variables                    |
-| `command`         | `string`   | `undefined`                                                  | Custom test command                      |
-| `processPool`     | `boolean`  | `true`                                                       | Enable process pooling for performance   |
-| `maxWorkers`      | `number`   | `4`                                                          | Maximum number of worker processes       |
-| `watchMode`       | `boolean`  | `false`                                                      | Enable watch mode for continuous testing |
-| `updateSnapshots` | `boolean`  | `false`                                                      | Update snapshots during test runs        |
+The runner supplies `--reporter`, `--reporter-outfile`, `--preload`,
+`--timeout`, `--bail`, and `--no-orphans`. Do not override these in `bunArgs`.
+Test-name filtering is performed by the preload rather than Bun's own
+`--test-name-pattern`.
 
-### Example Configurations
+## Behavior
 
-#### TypeScript Project
+- Every dry or mutant run starts a fresh Bun process. Module caches, globals,
+  snapshots, environment changes, and active mutants cannot leak between runs.
+- Bun's JUnit reporter supplies results, failures, skips, durations, file names,
+  and zero-based source positions.
+- A failed test kills its mutant. Passing tests allow a covered mutant to
+  survive.
+- Import crashes and non-coverage runs with zero executed tests return an error
+  instead of `Survived`.
+- A failed run that reaches Stryker's hit limit returns `Timeout`, not `Killed`.
+- Each run has an overall abort timeout and `--no-orphans`. Disposal aborts
+  children owned by that runner.
+- Stryker may still schedule independent runners concurrently according to
+  `concurrency`.
 
-```json
-{
-  "testRunner": "bun",
-  "plugins": ["@fidasek009/stryker-mutator-bun-runner"],
-  "mutate": ["src/**/*.ts", "!src/**/*.test.ts"],
-  "coverageAnalysis": "perTest",
-  "bun": {
-    "testFiles": ["src/**/*.test.ts"],
-    "timeout": 30000
-  }
-}
-```
+### Per-test coverage
 
-#### Custom Test Command
+With `coverageAnalysis: "perTest"`, the child preload wraps `bun:test`
+registration and sets `__stryker__.currentTestId` during execution. Coverage
+performed by file-level and suite-level `beforeEach` hooks is assigned to the
+corresponding test.
 
-```json
-{
-  "bun": {
-    "command": "bun test:unit --coverage"
-  }
-}
-```
+Stryker uses the dry run's coverage to select subsequent mutant runs. File paths
+supplied by Stryker are passed as file selections. Test IDs are matched by the
+preload; unmatched registrations become skipped tests. `test.each` titles are
+expanded before registration so JUnit names, coverage IDs, and selected tests
+agree.
 
-#### CI Environment
+`coverageAnalysis: "all"` collects static coverage without test attribution.
+`"off"` skips coverage collection.
 
-```json
-{
-  "bun": {
-    "timeout": 60000,
-    "nodeArgs": ["--max-old-space-size=4096"],
-    "env": {
-      "CI": "true",
-      "NODE_ENV": "test"
-    }
-  }
-}
-```
+### Mutant activation
 
-#### Performance Optimized with Process Pool
+Static mutants use `__STRYKER_ACTIVE_MUTANT__` from process startup, so they are
+active during imports. Runtime mutants activate in a preload `beforeAll` hook
+after test modules are imported. Each Stryker worker and test run receives a new
+environment.
 
-```json
-{
-  "bun": {
-    "processPool": true,
-    "maxWorkers": 8,
-    "testFiles": ["**/*.test.ts"],
-    "coverageAnalysis": "perTest"
-  }
-}
-```
+## Limitations
 
-#### Watch Mode for Development
+- The host workflow is Bun-only. There is no supported Node-hosted Stryker path.
+- Overlapping tests such as `test.concurrent` cannot use `perTest`; the preload
+  fails them instead of assigning overlapping coverage to one test. Use `all` or
+  `off`.
+- Full expanded test titles must be unique across a dry run. Duplicate titles
+  are rejected whether they occur in one file or several files.
+- Test filtering does not avoid loading selected test files or their imports. It
+  only controls test registration and execution.
+- Tests must use `bun:test`. No process pool, watch mode, custom test command,
+  or separate source-map remapping is provided.
+- `test.concurrent`, unrelated default test runners, and custom lifecycle
+  frameworks are not made compatible by the preload.
 
-```json
-{
-  "bun": {
-    "watchMode": true,
-    "processPool": true,
-    "maxWorkers": 2
-  }
-}
-```
+## Development
 
-#### Snapshot Testing
-
-```json
-{
-  "bun": {
-    "updateSnapshots": false, // Set to true to update snapshots
-    "testFiles": ["**/*.snapshot.test.ts"]
-  }
-}
-```
-
-## Requirements
-
-The supported Bun and Stryker core versions are declared in `package.json` under
-`engines` and `peerDependencies`. Bun must run both Stryker and the test
-processes.
-
-## Documentation
-
-- 📖 **[User Guide](./docs/GUIDE.md)** - Comprehensive guide with examples and
-  best practices
-- 🔧 **[API Documentation](./docs/API.md)** - Detailed API reference
-- 🚀 **[Example Project](./example)** - Complete working example with 800+
-  mutants
-- 🤝 **[Contributing Guide](./CONTRIBUTING.md)** - How to contribute to the
-  project
-
-## Performance Tips
-
-### 1. Enable Coverage Analysis
-
-```json
-{
-  "coverageAnalysis": "perTest"
-}
-```
-
-This can reduce test execution time by 80-90% by only running relevant tests for
-each mutant.
-
-### 2. Use Specific File Patterns
-
-```json
-{
-  "mutate": ["src/**/*.ts", "!src/**/*.test.ts", "!src/**/*.d.ts"]
-}
-```
-
-### 3. Parallelize in CI
-
-```json
-{
-  "concurrency": 4,
-  "concurrency_comment": "Adjust based on your CI runner"
-}
-```
-
-## Troubleshooting
-
-### Common Issues
-
-**Bun not found**
-
-```bash
-curl -fsSL https://bun.sh/install | bash
-```
-
-**Out of memory**
-
-```json
-{
-  "bun": {
-    "nodeArgs": ["--max-old-space-size=8192"]
-  }
-}
-```
-
-**Timeout errors**
-
-```json
-{
-  "bun": {
-    "timeout": 60000
-  }
-}
-```
-
-See the [troubleshooting guide](./docs/GUIDE.md#troubleshooting) for more
-solutions.
-
-## Project Status
-
-This plugin is actively maintained and tested with:
-
-- ✅ 100% line coverage
-- ✅ 97.43% function coverage
-- ✅ 100% mutation score
-- ✅ Comprehensive test suite (251 tests)
-- ✅ ESLint clean (0 errors, 0 warnings)
-- ✅ TypeScript strict mode
-- ✅ Phase 3 Complete: Process Pool, Watch Mode, Snapshot Testing, Source Maps
-
-## Contributing
-
-We welcome contributions! Please see our [Contributing Guide](./CONTRIBUTING.md)
-for details.
-
-### Development
-
-```bash
-# Clone the repo
-git clone https://github.com/Fidasek009/stryker-mutator-bun-runner.git
-cd stryker-mutator-bun-runner
-
-# Install dependencies
+```sh
 bun install
-
-# Run tests
-bun run test
-
-# Run linting
-bun run lint
-
-# Build the project
-bun run build
+bun run check
+bun run test:mutation:fixture
+bun run test:mutate
 ```
 
-## Support
+`bun run check` runs strict TypeScript, zero-warning ESLint, Prettier, unit
+tests, and integration tests. Integration fixtures exercise real Stryker runs
+for module-load errors, kills and survivors, static and runtime activation,
+parameterized tests, path and name filters, lifecycle hooks, random order, bail,
+timeout, and cleanup.
 
-- 🐛
-  **[Report bugs](https://github.com/Fidasek009/stryker-mutator-bun-runner/issues)**
-- 💡
-  **[Request features](https://github.com/Fidasek009/stryker-mutator-bun-runner/issues)**
-- 💬
-  **[Join Stryker Slack](https://join.slack.com/t/stryker-mutator/shared_invite/enQtOTUyMTYyNTg1NDQ0LTU4ODNmZDlmN2I3MmEyMTVhYjZlYmJkOThlNTY3NTM1M2QxYmM5YTM3ODQxYmJjY2YyYzllM2RkMmM1NjNjZjM)**
+`test:mutation:fixture` prints coverage-off and per-test wall times for a small
+deterministic fixture. It is not a guarantee of times for other projects.
+`test:mutate` mutates the result parser through the plugin; it is not a claim
+about coverage for the rest of the source files.
 
-## Changelog
-
-See [CHANGELOG.md](./CHANGELOG.md) for a detailed list of changes in each
-release.
-
-## License
-
-[Apache License 2.0](./LICENSE)
-
----
-
-<p align="center">
-  Made with ❤️ by the StrykerJS team
-</p>
+Report bugs and request features at
+[the project issue tracker](https://github.com/Fidasek009/stryker-mutator-bun-runner/issues).

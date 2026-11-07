@@ -1,5 +1,5 @@
 import { mkdir, mkdtemp, readFile, rm } from 'node:fs/promises';
-import { extname, join } from 'node:path';
+import { extname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { MutantCoverage } from '@stryker-mutator/api/core';
 import type { Logger } from '@stryker-mutator/api/logging';
@@ -10,11 +10,6 @@ import type {
   BunRunResult,
   BunTestRunnerOptions,
 } from './bun-test-runner-options.js';
-
-interface CoverageFile {
-  static: Record<string, number>;
-  perTest: Record<string, Record<string, number>>;
-}
 
 interface ProcessResult {
   exitCode: number;
@@ -155,7 +150,7 @@ export class BunTestAdapter {
     if (options.coverageAnalysis === 'perTest') {
       const duplicateTestId = this.findDuplicateTestId(parsed.tests);
       if (duplicateTestId) {
-        return `Duplicate test ID across files with coverageAnalysis=perTest: ${duplicateTestId}`;
+        return `Duplicate test ID with coverageAnalysis=perTest: ${duplicateTestId}`;
       }
     }
     if (options.coverageAnalysis !== 'off' && !result.mutantCoverage) {
@@ -174,9 +169,6 @@ export class BunTestAdapter {
     ];
     if (options.coverageAnalysis !== 'off' || options.activeMutantId !== undefined) {
       args.push('--preload', this.coverageHookPath);
-    }
-    if (options.testNamePattern) {
-      args.push('--test-name-pattern', options.testNamePattern);
     }
     if (!options.disableBail && (this.options.bail || options.activeMutantId !== undefined)) {
       args.push('--bail=1');
@@ -199,6 +191,10 @@ export class BunTestAdapter {
     env.STRYKER_BUN_COVERAGE_DIRECTORY = runDirectory;
     env.STRYKER_BUN_COVERAGE_MODE = options.coverageAnalysis;
     delete env.STRYKER_BUN_RUNTIME_MUTANT_ID;
+    delete env.STRYKER_BUN_TEST_NAME_PATTERN;
+    if (options.testNamePattern) {
+      env.STRYKER_BUN_TEST_NAME_PATTERN = options.testNamePattern;
+    }
     if (options.activeMutantId !== undefined) {
       if (options.mutantActivation === 'runtime') {
         env.STRYKER_BUN_RUNTIME_MUTANT_ID = options.activeMutantId;
@@ -223,7 +219,7 @@ export class BunTestAdapter {
       if (isGlob) {
         await this.addGlobMatches(pattern, files);
       } else {
-        files.add(pattern);
+        files.add(resolve(pattern));
       }
     }
     return [...files].sort();
@@ -232,6 +228,7 @@ export class BunTestAdapter {
   private async addGlobMatches(pattern: string, files: Set<string>): Promise<void> {
     let matched = false;
     for await (const file of new Bun.Glob(pattern).scan({ cwd: process.cwd(), onlyFiles: true })) {
+      if (file.split(/[/\\]/).includes('node_modules')) continue;
       files.add(file);
       matched = true;
     }
@@ -239,12 +236,10 @@ export class BunTestAdapter {
   }
 
   private findDuplicateTestId(tests: BunRunResult['tests']): string | undefined {
-    const filesByTestId = new Map<string, string | undefined>();
+    const testIds = new Set<string>();
     for (const test of tests) {
-      if (filesByTestId.has(test.id) && filesByTestId.get(test.id) !== test.fileName) {
-        return test.id;
-      }
-      filesByTestId.set(test.id, test.fileName);
+      if (testIds.has(test.id)) return test.id;
+      testIds.add(test.id);
     }
     return undefined;
   }
@@ -257,13 +252,15 @@ export class BunTestAdapter {
       onlyFiles: true,
     })) {
       found = true;
-      const coverage = JSON.parse(await readFile(join(runDirectory, path), 'utf8')) as CoverageFile;
+      const coverage = JSON.parse(
+        await readFile(join(runDirectory, path), 'utf8')
+      ) as MutantCoverage;
       this.mergeCoverage(merged, coverage);
     }
     return found ? merged : undefined;
   }
 
-  private mergeCoverage(merged: MutantCoverage, coverage: CoverageFile): void {
+  private mergeCoverage(merged: MutantCoverage, coverage: MutantCoverage): void {
     for (const [mutantId, hits] of Object.entries(coverage.static)) {
       merged.static[mutantId] = (merged.static[mutantId] ?? 0) + hits;
     }

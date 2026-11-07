@@ -100,7 +100,7 @@ export class BunResultParser {
       name,
       timeSpentMs: Math.round(Number(testCase.time ?? '0') * 1000),
       ...(fileName ? { fileName } : {}),
-      ...(testCase.line ? { startPosition: { line: Number(testCase.line), column: 0 } } : {}),
+      ...(testCase.line ? { startPosition: { line: Number(testCase.line) - 1, column: 0 } } : {}),
     };
     if (testCase.failure) {
       tests.push({

@@ -16,7 +16,6 @@ test('package identity and Stryker compatibility match the published fork', asyn
   );
   expect(packageJson.packageManager).toBe('bun@1.4.4');
   expect(packageJson.dependencies['@stryker-mutator/api']).toBe('10.1.1');
-  expect(packageJson.dependencies['@stryker-mutator/util']).toBe('10.1.1');
   expect(packageJson.devDependencies['@stryker-mutator/core']).toBe('10.1.1');
   expect(packageJson.peerDependencies['@stryker-mutator/core']).toBe('^10.1.1');
 });

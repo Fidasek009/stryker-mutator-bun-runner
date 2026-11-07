@@ -20,26 +20,36 @@ const runtimeGlobal = globalThis as typeof globalThis & StrykerGlobal;
 const stryker = (runtimeGlobal.__stryker__ ??= {});
 const coverageDirectory = process.env.STRYKER_BUN_COVERAGE_DIRECTORY;
 const coverageMode = process.env.STRYKER_BUN_COVERAGE_MODE;
+const configuredTestNamePattern = process.env.STRYKER_BUN_TEST_NAME_PATTERN;
+const testNamePattern = configuredTestNamePattern
+  ? new RegExp(configuredTestNamePattern)
+  : undefined;
+const beforeEachTestId = '__stryker_beforeEach__';
+let executingTestId: string | undefined;
 if (!coverageDirectory) throw new Error('STRYKER_BUN_COVERAGE_DIRECTORY is required');
 
+const hitLimit = process.env.__STRYKER_HIT_LIMIT__;
+if (hitLimit) {
+  stryker.hitLimit = Number(hitLimit);
+  stryker.hitCount = 0;
+}
 const runtimeMutantId = process.env.STRYKER_BUN_RUNTIME_MUTANT_ID;
 if (runtimeMutantId) {
   bunTest.beforeAll(() => {
     process.env.__STRYKER_ACTIVE_MUTANT__ = runtimeMutantId;
     stryker.activeMutant = runtimeMutantId;
-    const hitLimit = process.env.__STRYKER_HIT_LIMIT__;
-    if (hitLimit) {
-      stryker.hitLimit = Number(hitLimit);
-      stryker.hitCount = 0;
-    }
   });
 }
 
-if (coverageMode === 'perTest') {
+if (coverageMode !== undefined && coverageMode !== 'off') {
   stryker.mutantCoverage ??= { static: {}, perTest: {} };
+}
+if (
+  coverageMode === 'perTest' ||
+  runtimeMutantId !== undefined ||
+  process.env.__STRYKER_ACTIVE_MUTANT__ !== undefined
+) {
   wrapBunTest();
-} else if (coverageMode === 'all') {
-  stryker.mutantCoverage ??= { static: {}, perTest: {} };
 }
 
 if (coverageMode !== 'off') {
@@ -64,9 +74,19 @@ function wrapBunTest(): void {
     it: test,
     describe,
   }));
-  bunTest.afterEach(() => {
-    delete stryker.currentTestId;
-  });
+  if (coverageMode === 'perTest') {
+    // Bun does not expose the test name to beforeEach hooks.
+    bunTest.beforeEach(() => {
+      stryker.currentTestId = beforeEachTestId;
+      const coverage = (stryker.mutantCoverage ??= { static: {}, perTest: {} });
+      coverage.perTest[beforeEachTestId] = {};
+    });
+    bunTest.afterEach(() => {
+      delete stryker.currentTestId;
+      executingTestId = undefined;
+      if (stryker.mutantCoverage) delete stryker.mutantCoverage.perTest[beforeEachTestId];
+    });
+  }
 }
 
 function wrapRegistration<T extends object>(
@@ -89,7 +109,7 @@ function wrapRegistration<T extends object>(
           ? wrapTestCallback(argument, testId, formatNames)
           : argument
       );
-      return Reflect.apply(target as (...args: unknown[]) => unknown, thisArg, decorated);
+      return registerTest(target, thisArg, decorated, testId);
     },
     get(target, property) {
       if (properties.has(property)) return properties.get(property);
@@ -100,14 +120,16 @@ function wrapRegistration<T extends object>(
           ? new Proxy(value, {
               apply(innerTarget, thisArg, args) {
                 const result = Reflect.apply(innerTarget, target, args);
-                return typeof result === 'function'
-                  ? wrapRegistration(
-                      result,
-                      kind,
-                      suiteNames,
-                      formatNames || String(property) === 'each' || String(property) === 'for'
-                    )
-                  : result;
+                if (typeof result !== 'function') return result;
+                if (String(property) === 'each') {
+                  return wrapEachFactory(result, original, kind, suiteNames, args[0]);
+                }
+                return wrapRegistration(
+                  result,
+                  kind,
+                  suiteNames,
+                  formatNames || String(property) === 'for'
+                );
               },
             })
           : wrapRegistration(value, kind, suiteNames, formatNames);
@@ -116,6 +138,63 @@ function wrapRegistration<T extends object>(
       return wrapped;
     },
   });
+}
+
+function wrapEachFactory(
+  factory: object,
+  original: object,
+  kind: 'test' | 'describe',
+  suiteNames: string[],
+  table: unknown
+): object {
+  if (!Array.isArray(table)) throw new Error('test.each requires an array of test cases');
+  return new Proxy(factory, {
+    apply(target, thisArg, args) {
+      const callbackIndex = args.findIndex(
+        (argument, index) => index > 0 && typeof argument === 'function'
+      );
+      if (callbackIndex < 0)
+        return Reflect.apply(target as (...a: unknown[]) => unknown, thisArg, args);
+      const callback = args[callbackIndex];
+      return table.map((row, index) => {
+        const title = formatEachTitle(String(args[0]), row, index);
+        const testId = [...suiteNames, title].join(' ');
+        const wrappedCallback = wrapTestCallback(function (this: unknown, ...callArgs: unknown[]) {
+          return Reflect.apply(callback as (...a: unknown[]) => unknown, this, [
+            ...rowArguments(row),
+            ...callArgs,
+          ]);
+        }, testId);
+        const registrationArgs = [title, ...args.slice(1)];
+        registrationArgs[callbackIndex] = wrappedCallback;
+        return registerTest(original, original, registrationArgs, testId);
+      });
+    },
+  });
+}
+
+function registerTest(target: object, thisArg: unknown, args: unknown[], testId: string): unknown {
+  const registration =
+    testNamePattern?.test(testId) === false ? Reflect.get(target, 'skip', target) : target;
+  return Reflect.apply(registration as (...args: unknown[]) => unknown, thisArg, args);
+}
+
+function rowArguments(row: unknown): unknown[] {
+  return Array.isArray(row) ? row : [row];
+}
+
+function formatEachTitle(template: string, row: unknown, index: number): string {
+  const title = template
+    .replaceAll('%#', String(index))
+    .replaceAll('%p', '%s')
+    .replace(/\$([$A-Z_a-z][\w$]*(?:\.[$A-Z_a-z][\w$]*)*)/g, (expression, path: string) => {
+      const value = path.split('.').reduce<unknown>((current, key) => {
+        if (typeof current !== 'object' || current === null) return;
+        return (current as Record<string, unknown>)[key];
+      }, row);
+      return value === undefined ? expression : String(value);
+    });
+  return format(title, ...rowArguments(row));
 }
 
 function registerDescribe(
@@ -140,17 +219,25 @@ function registerDescribe(
   return Reflect.apply(target as (...args: unknown[]) => unknown, thisArg, decorated);
 }
 
-function wrapTestCallback(callback: object, testIdTemplate: string, formatName: boolean) {
+function wrapTestCallback(callback: object, testIdTemplate: string, formatName = false) {
   return function (this: unknown, ...args: unknown[]) {
+    if (coverageMode !== 'perTest') {
+      return Reflect.apply(callback as (...args: unknown[]) => unknown, this, args);
+    }
     const testId = formatName ? format(testIdTemplate, ...args) : testIdTemplate;
-    if (stryker.currentTestId !== undefined) {
+    if (executingTestId !== undefined) {
       throw new Error(
-        `Concurrent tests are unsupported with coverageAnalysis=perTest (while running ${stryker.currentTestId})`
+        `Concurrent tests are unsupported with coverageAnalysis=perTest (while running ${executingTestId})`
       );
     }
+    executingTestId = testId;
     stryker.currentTestId = testId;
     const coverage = (stryker.mutantCoverage ??= { static: {}, perTest: {} });
-    coverage.perTest[testId] ??= {};
+    const testCoverage = (coverage.perTest[testId] ??= {});
+    for (const [mutantId, hits] of Object.entries(coverage.perTest[beforeEachTestId] ?? {})) {
+      testCoverage[mutantId] = (testCoverage[mutantId] ?? 0) + hits;
+    }
+    delete coverage.perTest[beforeEachTestId];
     return Reflect.apply(callback as (...args: unknown[]) => unknown, this, args);
   };
 }
