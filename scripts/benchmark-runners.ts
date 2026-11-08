@@ -1,5 +1,5 @@
 import { rm } from 'node:fs/promises';
-import { arch, cpus, platform } from 'node:os';
+import { arch, platform } from 'node:os';
 import { join } from 'node:path';
 
 const fixtureDirectory = join(import.meta.dir, '../tests/fixtures/runner-comparison');
@@ -51,7 +51,6 @@ const result = {
   fixture: { mutants: mutantCount, tests: testCount, coverageAnalysis: 'perTest', concurrency: 2 },
   environment: {
     platform: `${platform()} ${arch()}`,
-    cpu: cpus()[0]?.model ?? 'unknown',
     bun: process.versions.bun,
     node: nodeVersion(),
   },

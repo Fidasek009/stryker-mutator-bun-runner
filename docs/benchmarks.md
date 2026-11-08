@@ -24,7 +24,7 @@ The fixture is a parameterized numerical workload. Per-test selection has more i
 
 ### Reference result
 
-Measured on Linux x64 with an 8-core AMD EPYC processor. Exact runtime versions and every sample are recorded in the generated JSON report.
+Measured on Linux x64. Exact runtime versions and every sample are recorded in the generated JSON report.
 
 | Stryker setup                            |  Median | Range            | Relative     |
 | ---------------------------------------- | ------: | ---------------- | ------------ |
