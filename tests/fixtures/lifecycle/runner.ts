@@ -17,6 +17,7 @@ const files: Record<string, string> = {
   concurrent: 'concurrent.test.ts',
   each: 'each.test.ts',
   eachFilter: 'each.test.ts',
+  largeFilter: 'each.test.ts',
   fileFilter: 'file-filter-one.test.ts',
   beforeEach: 'before-each.test.ts',
   hitLimit: 'hit-limit.test.ts',
@@ -63,6 +64,14 @@ try {
       ...(mode === 'noMatch' ? { testFilter: ['this test does not exist'] } : {}),
       ...(mode === 'eachFilter'
         ? { testFilter: ['positive check 1 => true', 'object 1 with { value: 2 }'] }
+        : {}),
+      ...(mode === 'largeFilter'
+        ? {
+            testFilter: [
+              'positive check 1 => true',
+              ...Array.from({ length: 2000 }, (_, index) => `unused ${index} ${'x'.repeat(100)}`),
+            ],
+          }
         : {}),
       ...(mode === 'fileFilter' ? { testFilter: [resolve(testFile)] } : {}),
       ...(mode === 'hitLimit' ? { hitLimit: 0 } : {}),

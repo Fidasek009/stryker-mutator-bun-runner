@@ -1,38 +1,14 @@
 import { TestStatus, type TestResult } from '@stryker-mutator/api/test-runner';
-import { XMLParser } from 'fast-xml-parser';
+import { XML } from 'bun';
 
-interface XmlText {
-  '#text'?: string;
-  message?: string;
-  type?: string;
-}
+type XmlInput = string | Uint8Array;
+type XmlNode = XML.Node;
+type XmlChild = XmlNode['children'][number];
 
-interface XmlTestCase {
-  name?: string;
-  time?: string;
-  file?: string;
-  line?: string;
-  failure?: Array<string | XmlText>;
-  skipped?: unknown[];
-}
-
-interface XmlSuite {
-  name?: string;
-  file?: string;
-  testsuite?: XmlSuite[];
-  testcase?: XmlTestCase[];
-}
-
-interface XmlDocument {
-  testsuites?: {
-    testsuite?: XmlSuite[];
-  };
-}
-
-export interface ParsedBunResults {
+export type ParsedBunResults = {
   tests: TestResult[];
   runtimeErrors: string[];
-}
+};
 
 const runtimeTestNames = new Set([
   '(unhandled error)',
@@ -42,73 +18,76 @@ const runtimeTestNames = new Set([
 ]);
 
 export class BunResultParser {
-  private readonly parser = new XMLParser({
-    ignoreAttributes: false,
-    attributeNamePrefix: '',
-    trimValues: false,
-    htmlEntities: true,
-    isArray: name => ['testsuite', 'testcase', 'failure', 'skipped'].includes(name),
-  });
-
-  public parse(xml: string): ParsedBunResults {
-    const document = this.parser.parse(xml) as XmlDocument;
+  public parse(xml: XmlInput): ParsedBunResults {
+    const document = XML.parse(xml, { compact: false });
     const tests: TestResult[] = [];
     const runtimeErrors: string[] = [];
-    for (const fileSuite of document.testsuites?.testsuite ?? []) {
-      this.parseSuite(fileSuite, [], fileSuite.file, tests, runtimeErrors);
+    if (document.name === 'testsuites') {
+      for (const fileSuite of document.children) {
+        if (isNamedElement(fileSuite, 'testsuite')) {
+          this.parseSuite(fileSuite, [], fileSuite.attributes.file, tests, runtimeErrors);
+        }
+      }
     }
     return { tests, runtimeErrors };
   }
 
   private parseSuite(
-    suite: XmlSuite,
+    suite: XmlNode,
     suiteNames: string[],
     fileName: string | undefined,
     tests: TestResult[],
     runtimeErrors: string[]
   ): void {
-    for (const testCase of suite.testcase ?? []) {
-      this.addTestResult(testCase, suiteNames, fileName, tests, runtimeErrors);
+    for (const child of suite.children) {
+      if (isNamedElement(child, 'testcase')) {
+        this.addTestResult(child, suiteNames, fileName, tests, runtimeErrors);
+      }
     }
-    for (const childSuite of suite.testsuite ?? []) {
-      this.parseSuite(
-        childSuite,
-        [...suiteNames, childSuite.name ?? '(unnamed suite)'],
-        childSuite.file ?? fileName,
-        tests,
-        runtimeErrors
-      );
+    for (const child of suite.children) {
+      if (isNamedElement(child, 'testsuite')) {
+        this.parseSuite(
+          child,
+          [...suiteNames, child.attributes.name ?? '(unnamed suite)'],
+          child.attributes.file ?? fileName,
+          tests,
+          runtimeErrors
+        );
+      }
     }
   }
 
   private addTestResult(
-    testCase: XmlTestCase,
+    testCase: XmlNode,
     suiteNames: string[],
     suiteFileName: string | undefined,
     tests: TestResult[],
     runtimeErrors: string[]
   ): void {
-    const name = [...suiteNames, testCase.name ?? '(unnamed test)'].join(' ');
-    const failureMessage = testCase.failure?.[0] ? textContent(testCase.failure[0]) : undefined;
-    if (testCase.name && runtimeTestNames.has(testCase.name)) {
-      runtimeErrors.push(failureMessage ?? `Bun reported ${testCase.name}`);
+    const testName = testCase.attributes.name;
+    const name = [...suiteNames, testName ?? '(unnamed test)'].join(' ');
+    const failure = findChild(testCase, 'failure');
+    const failureMessage = failure ? textContent(failure) : undefined;
+    if (testName && runtimeTestNames.has(testName)) {
+      runtimeErrors.push(failureMessage ?? `Bun reported ${testName}`);
       return;
     }
-    const fileName = testCase.file ?? suiteFileName;
+    const fileName = testCase.attributes.file ?? suiteFileName;
+    const line = testCase.attributes.line;
     const base = {
       id: name,
       name,
-      timeSpentMs: Math.round(Number(testCase.time ?? '0') * 1000),
+      timeSpentMs: Math.round(Number(testCase.attributes.time ?? '0') * 1000),
       ...(fileName ? { fileName } : {}),
-      ...(testCase.line ? { startPosition: { line: Number(testCase.line) - 1, column: 0 } } : {}),
+      ...(line ? { startPosition: { line: Number(line) - 1, column: 0 } } : {}),
     };
-    if (testCase.failure) {
+    if (failure) {
       tests.push({
         ...base,
         status: TestStatus.Failed,
         failureMessage: failureMessage ?? 'Test failed',
       });
-    } else if (testCase.skipped) {
+    } else if (findChild(testCase, 'skipped')) {
       tests.push({ ...base, status: TestStatus.Skipped });
     } else {
       tests.push({ ...base, status: TestStatus.Success });
@@ -116,7 +95,15 @@ export class BunResultParser {
   }
 }
 
-function textContent(value: string | XmlText): string {
-  if (typeof value === 'string') return value.trim();
-  return (value['#text'] ?? value.message ?? value.type ?? 'Test failed').trim();
+function isNamedElement(child: XmlChild, name: string): child is XmlNode {
+  return typeof child === 'object' && 'name' in child && child.name === name;
+}
+
+function findChild(parent: XmlNode, name: string): XmlNode | undefined {
+  return parent.children.find((child): child is XmlNode => isNamedElement(child, name));
+}
+
+function textContent(element: XmlNode): string | undefined {
+  const text = element.children.filter(child => typeof child === 'string').join('');
+  return (text || element.attributes.message || element.attributes.type)?.trim();
 }

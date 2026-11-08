@@ -1,0 +1,5 @@
+{
+  "name": "stryker-bun-runner-comparison",
+  "private": true,
+  "type": "module"
+}

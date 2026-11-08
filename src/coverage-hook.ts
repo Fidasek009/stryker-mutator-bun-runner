@@ -1,4 +1,3 @@
-import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { format } from 'node:util';
 import type { MutantCoverage } from '@stryker-mutator/api/core';
@@ -20,9 +19,9 @@ const runtimeGlobal = globalThis as typeof globalThis & StrykerGlobal;
 const stryker = (runtimeGlobal.__stryker__ ??= {});
 const coverageDirectory = process.env.STRYKER_BUN_COVERAGE_DIRECTORY;
 const coverageMode = process.env.STRYKER_BUN_COVERAGE_MODE;
-const configuredTestNamePattern = process.env.STRYKER_BUN_TEST_NAME_PATTERN;
-const testNamePattern = configuredTestNamePattern
-  ? new RegExp(configuredTestNamePattern)
+const testNamePatternPath = process.env.STRYKER_BUN_TEST_NAME_PATTERN_FILE;
+const testNamePattern = testNamePatternPath
+  ? new RegExp(await Bun.file(testNamePatternPath).text())
   : undefined;
 const beforeEachTestId = '__stryker_beforeEach__';
 let executingTestId: string | undefined;
@@ -44,21 +43,16 @@ if (runtimeMutantId) {
 if (coverageMode !== undefined && coverageMode !== 'off') {
   stryker.mutantCoverage ??= { static: {}, perTest: {} };
 }
-if (
-  coverageMode === 'perTest' ||
-  runtimeMutantId !== undefined ||
-  process.env.__STRYKER_ACTIVE_MUTANT__ !== undefined
-) {
+if (coverageMode === 'perTest' || testNamePattern !== undefined) {
   wrapBunTest();
 }
 
 if (coverageMode !== 'off') {
-  bunTest.afterAll(() => {
+  bunTest.afterAll(async () => {
     const output = stryker.mutantCoverage ?? { static: {}, perTest: {} };
-    writeFileSync(
+    await Bun.write(
       join(coverageDirectory, `coverage-${process.pid}.json`),
-      JSON.stringify(output),
-      'utf8'
+      JSON.stringify(output)
     );
     delete stryker.currentTestId;
   });
@@ -174,9 +168,8 @@ function wrapEachFactory(
 }
 
 function registerTest(target: object, thisArg: unknown, args: unknown[], testId: string): unknown {
-  const registration =
-    testNamePattern?.test(testId) === false ? Reflect.get(target, 'skip', target) : target;
-  return Reflect.apply(registration as (...args: unknown[]) => unknown, thisArg, args);
+  if (testNamePattern?.test(testId) === false) return undefined;
+  return Reflect.apply(target as (...args: unknown[]) => unknown, thisArg, args);
 }
 
 function rowArguments(row: unknown): unknown[] {

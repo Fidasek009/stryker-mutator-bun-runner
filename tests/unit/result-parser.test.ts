@@ -48,4 +48,15 @@ describe('BunResultParser', () => {
     });
     expect(result.runtimeErrors).toEqual(['module exploded']);
   });
+
+  test('uses the appropriate fallback for empty failures', () => {
+    const result = new BunResultParser().parse(
+      '<testsuites><testsuite><testcase name="failed"><failure /></testcase><testcase name="(unhandled error)"><failure /></testcase></testsuite></testsuites>'
+    );
+
+    expect(result.tests).toEqual([
+      expect.objectContaining({ status: TestStatus.Failed, failureMessage: 'Test failed' }),
+    ]);
+    expect(result.runtimeErrors).toEqual(['Bun reported (unhandled error)']);
+  });
 });
