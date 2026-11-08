@@ -82,6 +82,11 @@ describe('runner lifecycle', () => {
     expect((await expectStatus('eachFilter', 'survived')).nrOfTests).toBe(2);
   });
 
+  test('handles test-name filters larger than the environment limit', async () => {
+    const run = await expectStatus('largeFilter', 'survived');
+    expect(run.nrOfTests).toBe(1);
+  });
+
   test('attributes file and suite beforeEach coverage to each test', async () => {
     const run = await expectStatus('beforeEach', 'complete');
     expect(run.mutantCoverage).toEqual({

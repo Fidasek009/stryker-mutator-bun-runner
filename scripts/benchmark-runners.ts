@@ -8,13 +8,14 @@ if (!Number.isInteger(iterations) || iterations < 1) {
   throw new Error('BENCHMARK_ITERATIONS must be a positive integer');
 }
 
-type RunnerName = 'bun' | 'vitest';
+type RunnerName = 'bun' | 'command';
 type RunnerConfig = {
   executable: string;
   reportPath: string;
 };
 type ReportSummary = {
   signature: string;
+  mutationIds: string;
   testCount: number;
   mutantCount: number;
 };
@@ -22,22 +23,25 @@ type RunResult = ReportSummary & {
   durationMs: number;
 };
 
+const completedMutantStatuses = new Set(['Killed', 'Survived', 'NoCoverage', 'Timeout']);
 const runners: Record<RunnerName, RunnerConfig> = {
   bun: { executable: process.execPath, reportPath: join(fixtureDirectory, 'reports/bun.json') },
-  vitest: { executable: 'node', reportPath: join(fixtureDirectory, 'reports/vitest.json') },
+  command: { executable: 'node', reportPath: join(fixtureDirectory, 'reports/command.json') },
 };
-const samples: Record<RunnerName, number[]> = { bun: [], vitest: [] };
-let expectedSignature: string | undefined;
+const samples: Record<RunnerName, number[]> = { bun: [], command: [] };
+const expectedSignatures: Partial<Record<RunnerName, string>> = {};
+let expectedMutationIds: string | undefined;
 let testCount = 0;
 let mutantCount = 0;
 
-console.log(`Warmup: 6 mutants, 10 tests, per-test coverage, concurrency 2`);
-for (const name of ['bun', 'vitest'] as const) recordResult(await execute(name));
+console.log('Warmup');
+for (const name of ['bun', 'command'] as const) recordResult(name, await execute(name));
+console.log(`${mutantCount} mutants, ${testCount} tests, per-test coverage, concurrency 2`);
 for (let iteration = 0; iteration < iterations; iteration++) {
-  const order: RunnerName[] = iteration % 2 === 0 ? ['bun', 'vitest'] : ['vitest', 'bun'];
+  const order: RunnerName[] = iteration % 2 === 0 ? ['bun', 'command'] : ['command', 'bun'];
   for (const name of order) {
     const result = await execute(name);
-    recordResult(result);
+    recordResult(name, result);
     samples[name].push(result.durationMs);
     console.log(`${iteration + 1} ${name}: ${seconds(result.durationMs)}s`);
   }
@@ -53,9 +57,9 @@ const result = {
   },
   iterations,
   bun: summarize(samples.bun),
-  vitest: summarize(samples.vitest),
-  speedup: round(median(samples.vitest) / median(samples.bun)),
-  medianTimeReductionPercent: round((1 - median(samples.bun) / median(samples.vitest)) * 100),
+  command: summarize(samples.command),
+  speedup: round(median(samples.command) / median(samples.bun)),
+  medianTimeReductionPercent: round((1 - median(samples.bun) / median(samples.command)) * 100),
 };
 await Bun.write(
   join(fixtureDirectory, 'reports/comparison.json'),
@@ -91,12 +95,16 @@ async function execute(name: RunnerName): Promise<RunResult> {
   return { ...(await readSummary(runner.reportPath)), durationMs: performance.now() - startedAt };
 }
 
-function recordResult(result: RunResult): void {
-  expectedSignature ??= result.signature;
+function recordResult(name: RunnerName, result: RunResult): void {
+  const expectedSignature = (expectedSignatures[name] ??= result.signature);
   if (result.signature !== expectedSignature) {
-    throw new Error(`Runner outcomes differ: ${expectedSignature} !== ${result.signature}`);
+    throw new Error(`${name} outcomes changed: ${expectedSignature} !== ${result.signature}`);
   }
-  testCount = result.testCount;
+  expectedMutationIds ??= result.mutationIds;
+  if (result.mutationIds !== expectedMutationIds) {
+    throw new Error('Runners received different mutants');
+  }
+  if (name === 'bun') testCount = result.testCount;
   mutantCount = result.mutantCount;
 }
 
@@ -107,6 +115,7 @@ async function readSummary(path: string): Promise<ReportSummary> {
   const files = record(report.files, 'files');
   const tests: string[] = [];
   const mutants: string[] = [];
+  const mutationIds: string[] = [];
   for (const file of Object.values(testFiles)) {
     const testFile = record(file, 'test file');
     for (const test of array(testFile.tests, 'tests')) {
@@ -118,13 +127,21 @@ async function readSummary(path: string): Promise<ReportSummary> {
     const sourceFile = record(file, 'source file');
     for (const mutant of array(sourceFile.mutants, 'mutants')) {
       const result = record(mutant, 'mutant');
-      mutants.push(`${string(result.id, 'mutant id')}:${string(result.status, 'mutant status')}`);
+      const id = string(result.id, 'mutant id');
+      const status = string(result.status, 'mutant status');
+      if (!completedMutantStatuses.has(status)) {
+        throw new Error(`Unexpected mutant status: ${status}`);
+      }
+      mutationIds.push(id);
+      mutants.push(`${id}:${status}`);
     }
   }
   tests.sort();
   mutants.sort();
+  mutationIds.sort();
   return {
     signature: JSON.stringify({ tests, mutants }),
+    mutationIds: JSON.stringify(mutationIds),
     testCount: tests.length,
     mutantCount: mutants.length,
   };

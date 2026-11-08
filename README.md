@@ -14,14 +14,14 @@ Built for `bun:test`, with TypeScript and JSX support out of the box.
 
 ## Real runs. Real speed.
 
-**1.9× faster than the Vitest runner on the full mutation suite.** Not a micro-benchmark: every number includes Stryker startup, instrumentation, the dry run, all mutant runs, and reporting.
+**3.3× faster than letting Stryker invoke `bun test` through its generic command runner.** Full Stryker runs on 75 mutants and 1,050 real tests. No sleeps. No migrated test suite.
 
-| Stryker setup         | Median wall time |
-| --------------------- | ---------------: |
-| **Bun + this runner** |       **3.11 s** |
-| Node + Vitest runner  |           5.93 s |
+| Stryker setup                            | Median wall time |
+| ---------------------------------------- | ---------------: |
+| **Bun + this runner**                    |      **22.64 s** |
+| Node + command runner running `bun test` |          75.66 s |
 
-Six mutants. Ten equivalent tests. Ten interleaved runs. The full setup and a benchmark you can run yourself are in [Benchmarks](docs/benchmarks.md).
+Same authored tests and mutations. Ten interleaved runs. See the workload, command runner tradeoffs, and a benchmark you can run yourself in [Benchmarks](docs/benchmarks.md).
 
 ## Install
 

@@ -1,0 +1,14 @@
+{
+  "$schema": "../../../node_modules/@stryker-mutator/core/schema/stryker-schema.json",
+  "testRunner": "command",
+  "commandRunner": { "command": "bun test test/bun/*.test.ts" },
+  "mutate": ["src/*.ts"],
+  "coverageAnalysis": "perTest",
+  "disableBail": true,
+  "concurrency": 2,
+  "reporters": ["json"],
+  "jsonReporter": { "fileName": "reports/command.json" },
+  "cleanTempDir": true,
+  "logLevel": "error",
+  "thresholds": { "high": 0, "low": 0, "break": null }
+}

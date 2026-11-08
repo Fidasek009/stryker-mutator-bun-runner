@@ -59,7 +59,7 @@ export class BunTestAdapter {
       const startedAt = performance.now();
       const junitPath = join(runDirectory, 'junit.xml');
       const args = await this.buildArgs(options, junitPath);
-      const env = this.buildEnvironment(options, runDirectory);
+      const env = await this.buildEnvironment(options, runDirectory);
       this.log.debug(`Running ${process.execPath} ${args.join(' ')}`);
       const processResult = await this.execute(args, env, options.timeout);
       return await this.collectResult(options, runDirectory, junitPath, processResult, startedAt);
@@ -192,7 +192,10 @@ export class BunTestAdapter {
     return args;
   }
 
-  private buildEnvironment(options: BunRunOptions, runDirectory: string): Record<string, string> {
+  private async buildEnvironment(
+    options: BunRunOptions,
+    runDirectory: string
+  ): Promise<Record<string, string>> {
     const env: Record<string, string> = { ...process.env, ...this.options.env } as Record<
       string,
       string
@@ -203,8 +206,11 @@ export class BunTestAdapter {
     env.STRYKER_BUN_COVERAGE_MODE = options.coverageAnalysis;
     delete env.STRYKER_BUN_RUNTIME_MUTANT_ID;
     delete env.STRYKER_BUN_TEST_NAME_PATTERN;
+    delete env.STRYKER_BUN_TEST_NAME_PATTERN_FILE;
     if (options.testNamePattern) {
-      env.STRYKER_BUN_TEST_NAME_PATTERN = options.testNamePattern;
+      const testNamePatternPath = join(runDirectory, 'test-name-pattern.txt');
+      await Bun.write(testNamePatternPath, options.testNamePattern);
+      env.STRYKER_BUN_TEST_NAME_PATTERN_FILE = testNamePatternPath;
     }
     if (options.activeMutantId !== undefined) {
       if (options.mutantActivation === 'runtime') {

@@ -19,9 +19,9 @@ const runtimeGlobal = globalThis as typeof globalThis & StrykerGlobal;
 const stryker = (runtimeGlobal.__stryker__ ??= {});
 const coverageDirectory = process.env.STRYKER_BUN_COVERAGE_DIRECTORY;
 const coverageMode = process.env.STRYKER_BUN_COVERAGE_MODE;
-const configuredTestNamePattern = process.env.STRYKER_BUN_TEST_NAME_PATTERN;
-const testNamePattern = configuredTestNamePattern
-  ? new RegExp(configuredTestNamePattern)
+const testNamePatternPath = process.env.STRYKER_BUN_TEST_NAME_PATTERN_FILE;
+const testNamePattern = testNamePatternPath
+  ? new RegExp(await Bun.file(testNamePatternPath).text())
   : undefined;
 const beforeEachTestId = '__stryker_beforeEach__';
 let executingTestId: string | undefined;
@@ -168,9 +168,8 @@ function wrapEachFactory(
 }
 
 function registerTest(target: object, thisArg: unknown, args: unknown[], testId: string): unknown {
-  const registration =
-    testNamePattern?.test(testId) === false ? Reflect.get(target, 'skip', target) : target;
-  return Reflect.apply(registration as (...args: unknown[]) => unknown, thisArg, args);
+  if (testNamePattern?.test(testId) === false) return undefined;
+  return Reflect.apply(target as (...args: unknown[]) => unknown, thisArg, args);
 }
 
 function rowArguments(row: unknown): unknown[] {

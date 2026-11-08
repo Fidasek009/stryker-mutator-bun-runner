@@ -37,7 +37,7 @@ A `perTest` dry run wraps the `bun:test` exports before test modules load. Regis
 
 Before `.each` rows are registered, the preload expands placeholders into distinct titles. Both test selection and coverage use the same expanded title, avoiding Bun's differing JUnit and native filtering behavior.
 
-Test-name selection happens during registration. Matching registrations run normally; nonmatching registrations become skipped tests. Every selected file still loads, so top-level module failures remain visible. Duplicate titles and overlapping tests are rejected because one global test ID cannot safely attribute them.
+Test-name selection happens during registration. Matching tests register normally; nonmatching tests are not registered. Every selected file still loads, so top-level module failures remain visible. Duplicate titles and overlapping tests are rejected because one global test ID cannot safely attribute them.
 
 With coverage analysis `all`, static coverage is returned without per-test attribution. With `off`, no coverage artifact is collected.
 
