@@ -21,7 +21,7 @@ Built for `bun:test`, with TypeScript and JSX support out of the box.
 | **Bun + this runner**                    |      **22.64 s** |
 | Node + command runner running `bun test` |          75.66 s |
 
-Same authored tests and mutations. Ten interleaved runs. See the workload, command runner tradeoffs, and a benchmark you can run yourself in [Benchmarks](docs/benchmarks.md).
+Same authored tests and mutations. Ten interleaved full runs. The command baseline ignores coverage and runs everything for every mutant; this runner selects covering tests. Reproduce with `bun run benchmark:runners`.
 
 ## Install
 
