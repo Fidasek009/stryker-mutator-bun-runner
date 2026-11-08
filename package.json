@@ -1,6 +1,6 @@
 {
   "name": "@fidasek009/stryker-mutator-bun-runner",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Bun test runner plugin for StrykerJS",
   "type": "module",
   "main": "./dist/index.js",
