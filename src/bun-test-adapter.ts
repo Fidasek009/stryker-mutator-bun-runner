@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm } from 'node:fs/promises';
 import { extname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { MutantCoverage } from '@stryker-mutator/api/core';
@@ -11,12 +11,12 @@ import type {
   BunTestRunnerOptions,
 } from './bun-test-runner-options.js';
 
-interface ProcessResult {
+type ProcessResult = {
   exitCode: number;
   stdout: string;
   stderr: string;
   timedOut: boolean;
-}
+};
 
 export class BunTestAdapter {
   private readonly parser = new BunResultParser();
@@ -26,6 +26,7 @@ export class BunTestAdapter {
   );
   private readonly options: Required<Omit<BunTestRunnerOptions, 'testFiles' | 'bunArgs' | 'env'>> &
     Pick<BunTestRunnerOptions, 'testFiles' | 'bunArgs' | 'env'>;
+  private defaultTestFiles?: Promise<string[]>;
 
   constructor(
     private readonly log: Logger,
@@ -129,8 +130,9 @@ export class BunTestAdapter {
   }
 
   private async parseResults(junitPath: string): Promise<ParsedBunResults> {
-    if (await Bun.file(junitPath).exists()) {
-      return this.parser.parse(await readFile(junitPath, 'utf8'));
+    const junit = Bun.file(junitPath);
+    if (await junit.exists()) {
+      return this.parser.parse(await junit.bytes());
     }
     return { tests: [], runtimeErrors: [] };
   }
@@ -167,7 +169,12 @@ export class BunTestAdapter {
       `--reporter-outfile=${junitPath}`,
       `--timeout=${this.options.timeout}`,
     ];
-    if (options.coverageAnalysis !== 'off' || options.activeMutantId !== undefined) {
+    if (
+      options.coverageAnalysis !== 'off' ||
+      options.mutantActivation === 'runtime' ||
+      options.testNamePattern !== undefined ||
+      options.hitLimit !== undefined
+    ) {
       args.push('--preload', this.coverageHookPath);
     }
     if (!options.disableBail && (this.options.bail || options.activeMutantId !== undefined)) {
@@ -177,7 +184,11 @@ export class BunTestAdapter {
       args.push('--update-snapshots');
     }
     if (this.options.bunArgs) args.push(...this.options.bunArgs);
-    args.push(...(await this.resolveTestFiles(options.testFiles)));
+    const testFiles =
+      options.testFiles === undefined
+        ? await this.resolveDefaultTestFiles()
+        : await this.resolveTestFiles(options.testFiles);
+    args.push(...testFiles);
     return args;
   }
 
@@ -210,8 +221,11 @@ export class BunTestAdapter {
     return env;
   }
 
-  private async resolveTestFiles(override?: string[]): Promise<string[]> {
-    const patterns = override ?? this.options.testFiles;
+  private resolveDefaultTestFiles(): Promise<string[]> {
+    return (this.defaultTestFiles ??= this.resolveTestFiles(this.options.testFiles));
+  }
+
+  private async resolveTestFiles(patterns?: string[]): Promise<string[]> {
     if (!patterns) return [];
     const files = new Set<string>();
     for (const pattern of patterns) {
@@ -245,19 +259,19 @@ export class BunTestAdapter {
   }
 
   private async readCoverage(runDirectory: string): Promise<MutantCoverage | undefined> {
-    const merged: MutantCoverage = { static: {}, perTest: {} };
-    let found = false;
+    let merged: MutantCoverage | undefined;
     for await (const path of new Bun.Glob('coverage-*.json').scan({
       cwd: runDirectory,
       onlyFiles: true,
     })) {
-      found = true;
-      const coverage = JSON.parse(
-        await readFile(join(runDirectory, path), 'utf8')
-      ) as MutantCoverage;
-      this.mergeCoverage(merged, coverage);
+      const coverage = (await Bun.file(join(runDirectory, path)).json()) as MutantCoverage;
+      if (merged) {
+        this.mergeCoverage(merged, coverage);
+      } else {
+        merged = coverage;
+      }
     }
-    return found ? merged : undefined;
+    return merged;
   }
 
   private mergeCoverage(merged: MutantCoverage, coverage: MutantCoverage): void {

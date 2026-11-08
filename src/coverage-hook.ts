@@ -1,4 +1,3 @@
-import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { format } from 'node:util';
 import type { MutantCoverage } from '@stryker-mutator/api/core';
@@ -44,21 +43,16 @@ if (runtimeMutantId) {
 if (coverageMode !== undefined && coverageMode !== 'off') {
   stryker.mutantCoverage ??= { static: {}, perTest: {} };
 }
-if (
-  coverageMode === 'perTest' ||
-  runtimeMutantId !== undefined ||
-  process.env.__STRYKER_ACTIVE_MUTANT__ !== undefined
-) {
+if (coverageMode === 'perTest' || testNamePattern !== undefined) {
   wrapBunTest();
 }
 
 if (coverageMode !== 'off') {
-  bunTest.afterAll(() => {
+  bunTest.afterAll(async () => {
     const output = stryker.mutantCoverage ?? { static: {}, perTest: {} };
-    writeFileSync(
+    await Bun.write(
       join(coverageDirectory, `coverage-${process.pid}.json`),
-      JSON.stringify(output),
-      'utf8'
+      JSON.stringify(output)
     );
     delete stryker.currentTestId;
   });

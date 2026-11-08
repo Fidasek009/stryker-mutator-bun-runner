@@ -26,6 +26,7 @@
     "test:unit": "bun test tests/unit",
     "test:integration": "bun run build && bun test tests/integration",
     "test:mutation:fixture": "bun ./scripts/run-mutation-fixture.ts",
+    "benchmark:runners": "bun run build && bun ./scripts/benchmark-runners.ts",
     "test:mutate": "bun ./node_modules/@stryker-mutator/core/bin/stryker.js run",
     "lint": "oxlint src tests scripts --deny-warnings",
     "format": "bun fmt src tests scripts README.md package.json .oxlintrc.json tsconfig.json tsconfig.build.json stryker.config.json",
@@ -35,8 +36,7 @@
     "prepublishOnly": "bun run check && bun run build"
   },
   "dependencies": {
-    "@stryker-mutator/api": "10.1.1",
-    "fast-xml-parser": "^5.12.0"
+    "@stryker-mutator/api": "10.1.1"
   },
   "peerDependencies": {
     "@stryker-mutator/core": "^10.1.1",
@@ -45,10 +45,13 @@
   "devDependencies": {
     "@playwright/test": "^1.56.1",
     "@stryker-mutator/core": "10.1.1",
+    "@stryker-mutator/vitest-runner": "10.1.1",
     "@types/bun": "1.4.4",
     "@types/node": "^26.6.6",
     "oxlint": "^1.92.0",
-    "typescript": "7.0.2"
+    "typescript": "7.0.2",
+    "vite": "8.3.6",
+    "vitest": "5.1.0"
   },
   "keywords": [
     "stryker",
