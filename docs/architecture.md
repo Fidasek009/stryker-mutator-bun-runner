@@ -57,7 +57,7 @@ The test layout is:
 - Unit tests for JUnit parsing, filter regular-expression escaping, and package identity.
 - Lifecycle subprocess fixtures for kill/survive/error outcomes, `beforeEach`, parameterized tests, file filters, bail, cleanup, duplicate titles, and dependency exclusion.
 - Real Stryker fixture runs for module-load failures and expected killed, survived, and no-coverage outcomes.
-- A Bun-versus-Vitest comparison fixture for full-run wall-clock benchmarks through `benchmark:runners`.
+- A Bun-native-versus-command-runner comparison fixture for full-run wall-clock benchmarks through `benchmark:runners`.
 
 `bun run check` runs strict types, lint, formatting, all tests, and a TypeScript build. `stryker.config.json` selectively self-mutates the result parser with its unit test. It is not a whole-plugin mutation-coverage claim.
 

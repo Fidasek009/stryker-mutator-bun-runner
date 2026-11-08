@@ -205,7 +205,6 @@ export class BunTestAdapter {
     env.STRYKER_BUN_COVERAGE_DIRECTORY = runDirectory;
     env.STRYKER_BUN_COVERAGE_MODE = options.coverageAnalysis;
     delete env.STRYKER_BUN_RUNTIME_MUTANT_ID;
-    delete env.STRYKER_BUN_TEST_NAME_PATTERN;
     delete env.STRYKER_BUN_TEST_NAME_PATTERN_FILE;
     if (options.testNamePattern) {
       const testNamePatternPath = join(runDirectory, 'test-name-pattern.txt');

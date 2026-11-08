@@ -119,7 +119,7 @@ async function readSummary(path: string): Promise<ReportSummary> {
     const testFile = record(file, 'test file');
     for (const test of array(testFile.tests, 'tests')) {
       const testResult = record(test, 'test');
-      tests.push(string(testResult.name, 'test name').replaceAll(' > ', ' '));
+      tests.push(string(testResult.name, 'test name'));
     }
   }
   for (const file of Object.values(files)) {

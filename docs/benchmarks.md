@@ -24,11 +24,4 @@ The fixture is a parameterized numerical workload. Per-test selection has more i
 
 ### Reference result
 
-Measured on Linux x64. Exact runtime versions and every sample are recorded in the generated JSON report.
-
-| Stryker setup                            |  Median | Range            | Relative     |
-| ---------------------------------------- | ------: | ---------------- | ------------ |
-| Bun + this runner                        | 22.64 s | 20.84 to 24.43 s | 3.34× faster |
-| Node + command runner running `bun test` | 75.66 s | 70.59 to 80.23 s | 1×           |
-
-Thirty-minute benchmarking cap. All ten measured runs per runner completed with deterministic outcomes.
+[The README](../README.md#real-runs-real-speed) contains the published reference timings from a Linux x64 run. The generated JSON report records exact runtime versions and every sample.
